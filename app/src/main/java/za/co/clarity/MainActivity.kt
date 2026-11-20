@@ -300,6 +300,7 @@ private fun monthKeyFor(time: Long)=SimpleDateFormat("yyyy-MM",Locale.US).format
 
 @Composable private fun EmptyState(title:String,sub:String) { Column(Modifier.fillMaxWidth().padding(35.dp),horizontalAlignment=Alignment.CenterHorizontally){Icon(Icons.Default.Inbox,null,tint=Muted,modifier=Modifier.size(38.dp));Text(title,color=White,fontWeight=FontWeight.Bold,modifier=Modifier.padding(top=12.dp));Text(sub,color=Muted,fontSize=12.sp)} }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable private fun TransactionDialog(categories:List<MoneyCategory>,onDismiss:()->Unit,onSave:(String,Double,String,String,String)->Unit) {
     var title by remember{mutableStateOf("")};var amount by remember{mutableStateOf("")};var type by remember{mutableStateOf("Expense")};var category by remember{mutableStateOf("Other")};var note by remember{mutableStateOf("")}
     AlertDialog(onDismissRequest=onDismiss,containerColor=Panel,title={Text("New transaction",color=White)},text={
