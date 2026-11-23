@@ -391,7 +391,11 @@ private fun BudgetScreen(plans: List<MonthlyPlan>, tx: List<MoneyTransaction>, c
     val yearPlans=months.map{k->plans.find{it.monthKey==k} ?: MonthlyPlan(k)}
     fun store(next:Map<String,Double>) {
         val j=JSONObject(); next.forEach{(k,v)->j.put(k,v)}
-        prefs.edit().putString(selected,j.toString()).apply(); limits=next
+        val categoryTotal = next.values.sum()
+        prefs.edit().putString(selected,j.toString()).apply()
+        limits=next
+        expenseText=categoryTotal.toString()
+        onSave(plan.copy(expenseEstimate=categoryTotal))
     }
     LazyColumn(verticalArrangement=Arrangement.spacedBy(13.dp),contentPadding=PaddingValues(bottom=24.dp)) {
         item { Row(horizontalArrangement=Arrangement.spacedBy(8.dp)) {
@@ -444,9 +448,25 @@ private fun BudgetScreen(plans: List<MonthlyPlan>, tx: List<MoneyTransaction>, c
             } }
             item { Text("Monthly targets",color=White,fontSize=18.sp,fontWeight=FontWeight.Bold) }
             item { BudgetInput("Planned income (R)",incomeText,{incomeText=it},Mint) }
-            item { BudgetInput("Planned total expenses (R)",expenseText,{expenseText=it},Red) }
+            item {
+                val displayedExpensePlan = if (limits.isNotEmpty()) limits.values.sum().toString() else expenseText
+                BudgetInput(
+                    "Planned total expenses (R)",
+                    displayedExpensePlan,
+                    { typed -> if (limits.isEmpty()) expenseText=typed },
+                    Red
+                )
+            }
             item { BudgetInput("Savings target (R)",savingsText,{savingsText=it},Blue) }
-            item { Button(onClick={onSave(plan.copy(incomeEstimate=incomeText.toDoubleOrNull()?:0.0,expenseEstimate=expenseText.toDoubleOrNull()?:0.0,savingsEstimate=savingsText.toDoubleOrNull()?:0.0))},
+            item { Button(onClick={
+                val categoryTotal = limits.values.sum()
+                val plannedExpenses = if (limits.isNotEmpty()) categoryTotal else (expenseText.toDoubleOrNull() ?: 0.0)
+                onSave(plan.copy(
+                    incomeEstimate=incomeText.toDoubleOrNull()?:0.0,
+                    expenseEstimate=plannedExpenses,
+                    savingsEstimate=savingsText.toDoubleOrNull()?:0.0
+                ))
+            },
                 modifier=Modifier.fillMaxWidth().height(54.dp),shape=RoundedCornerShape(15.dp)) {
                 Icon(Icons.Default.CheckCircle,null); Spacer(Modifier.width(7.dp)); Text("Save monthly plan",fontWeight=FontWeight.Bold)
             } }
